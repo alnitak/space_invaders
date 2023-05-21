@@ -1,11 +1,15 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
+import 'package:flame/particles.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'aliens.dart';
+import 'explosion_particles.dart';
 import 'player.dart';
 
 void main() {
@@ -38,11 +42,38 @@ class SpaceInvaders extends FlameGame
       await loadSprite('alien.png'),
       size,
       (hitIndex) {
+        /// remove alien component
         remove(aliens!.aliens[hitIndex].alien);
+        /// set its visibility
         aliens!.aliens[hitIndex] = (
           alien: aliens!.aliens[hitIndex].alien,
           isVisible: false,
         );
+        /// create particle explosion
+        double lifespan = 2;
+        addAll([
+          for (int i = 0; i < 20; ++i)
+            ParticleSystemComponent(
+              particle: MovingParticle(
+                lifespan: lifespan,
+                // Will move from corner to corner of the game canvas.
+                from: aliens!.aliens[hitIndex].alien.center,
+                to: Vector2(
+                  aliens!.aliens[hitIndex].alien.center.x +
+                      Random().nextDouble() * 80 -
+                      40,
+                  aliens!.aliens[hitIndex].alien.center.y +
+                      Random().nextDouble() * 80 -
+                      40,
+                ),
+                child: ExplosionParticle(
+                  lifespan: lifespan,
+                  fromRadius: Random().nextDouble() * 2,
+                  toRadius: Random().nextDouble() * 6,
+                ),
+              ),
+            ),
+        ]);
       },
     );
     for (int i = 0; i < aliens!.aliens.length; ++i) {
@@ -92,7 +123,6 @@ class SpaceInvaders extends FlameGame
   KeyEventResult onKeyEvent(
       RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     final isKeyDown = event is RawKeyDownEvent;
-
     final isSpace = keysPressed.contains(LogicalKeyboardKey.space);
 
     if (isSpace && isKeyDown) {
@@ -117,10 +147,6 @@ class SpaceInvaders extends FlameGame
     add(
       PlayerFire(
         playerPos: player.position,
-        onHit: (component) {
-          remove(component);
-          FlameAudio.play('explosion.wav', volume: 0.6);
-        },
       ),
     );
     FlameAudio.play('shoot.wav', volume: 0.6);

@@ -1,26 +1,21 @@
 import 'package:flame/components.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/collisions.dart';
 
 class Player extends SpriteComponent {
-
   moveTo(Vector2 delta) {
     position.add(delta);
   }
-  
 }
 
-
 class PlayerFire extends CustomPainterComponent with CollisionCallbacks {
-
-  final Function(CustomPainterComponent) onHit;
   Vector2 playerPos;
   late Timer timer;
   late RectangleHitbox hitBox;
 
   PlayerFire({
     required this.playerPos,
-    required this.onHit,
   }) {
     timer = Timer(
       0.02,
@@ -29,7 +24,7 @@ class PlayerFire extends CustomPainterComponent with CollisionCallbacks {
       onTick: () {
         playerPos += Vector2(0.0, -5.0);
         hitBox.position += Vector2(0.0, -5.0);
-        if (hitBox.position.y < 0) onHit(this);
+        if (hitBox.position.y < 0) _removeMe();
       },
     );
     hitBox = RectangleHitbox(
@@ -42,7 +37,7 @@ class PlayerFire extends CustomPainterComponent with CollisionCallbacks {
   @override
   void onCollision(Set<Vector2> points, PositionComponent other) {
     super.onCollision(points, other);
-    onHit(this);
+    _removeMe();
   }
 
   @override
@@ -57,5 +52,10 @@ class PlayerFire extends CustomPainterComponent with CollisionCallbacks {
   void update(double dt) {
     super.update(dt);
     timer.update(dt);
+  }
+
+  _removeMe() {
+    removeFromParent();
+    FlameAudio.play('explosion.wav', volume: 0.6);
   }
 }

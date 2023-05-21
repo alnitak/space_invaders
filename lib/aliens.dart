@@ -35,7 +35,8 @@ class Aliens {
     double height = width * 0.75;
     int row = index ~/ 10;
     int col = index % 10;
-    aliens[index].alien.position = Vector2((width * 1.25) * col, (height * 1.3) * row);
+    aliens[index].alien.position =
+        Vector2((width * 1.25) * col, (height * 1.3) * row);
     aliens[index].alien.size = Vector2(width, height);
   }
 
@@ -107,5 +108,4 @@ class Alien extends SpriteComponent with CollisionCallbacks {
   void moveTo(Vector2 delta) {
     position += delta;
   }
-
 }
